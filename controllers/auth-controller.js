@@ -1,9 +1,14 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
 import User from "../models/User.js";
 import { ctrlWrapper } from "../decorators/index.js";
 import { HttpError } from "../helpers/index.js";
+
+dotenv.configDotenv();
+
+const { JWT_SECRET } = process.env;
 
 const signup = async (req, res) => {
   const { email, password } = req.body;
@@ -25,7 +30,6 @@ const signup = async (req, res) => {
 };
 
 const signin = async (req, res) => {
-  const { JWT_SECRET } = process.env;
   const { email, password, subscription } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
@@ -42,6 +46,7 @@ const signin = async (req, res) => {
   };
 
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "23h" });
+  await User.findByIdAndUpdate(user._id, { token });
 
   res.json({
     token,
@@ -52,7 +57,35 @@ const signin = async (req, res) => {
   });
 };
 
+const getCurrent = async (req, res) => {
+  const { email, subscription } = req.user;
+
+  res.json({
+    email,
+    subscription,
+  });
+};
+
+const signout = async (req, res) => {
+  const { _id } = req.user;
+  await User.findByIdAndUpdate(_id, { token: "" });
+
+  res.status(204);
+};
+
+const updateSubscription = async (req, res) => {
+  const { _id } = req.user;
+  const { subscription } = req.body;
+
+  await User.findByIdAndUpdate(_id, { subscription });
+
+  res.json({ message: "The subscription was updated successfully" });
+};
+
 export default {
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),
+  signout: ctrlWrapper(signout),
+  getCurrent: ctrlWrapper(getCurrent),
+  updateSubscription: ctrlWrapper(updateSubscription),
 };

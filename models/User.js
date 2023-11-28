@@ -27,10 +27,6 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
-    owner: {
-      type: Schema.Types.ObjectId,
-      ref: "user",
-    },
   },
   { versionKey: false, timestamps: true }
 );
@@ -40,7 +36,6 @@ userSchema.pre("findOneAndUpdate", preUpdate);
 userSchema.post("findOneAndUpdate", handleSaveError);
 
 export const userSignupSchema = Joi.object({
-  // username: Joi.string().required(),
   email: Joi.string().pattern(emailRegex),
   password: Joi.string().min(6).required(),
 });
@@ -48,6 +43,10 @@ export const userSignupSchema = Joi.object({
 export const userSigninSchema = Joi.object({
   email: Joi.string().pattern(emailRegex),
   password: Joi.string().min(6).required(),
+});
+
+export const updateSubscriptionSchema = Joi.object({
+  subscription: Joi.string().valid("starter", "pro", "business").required(),
 });
 
 const User = model("user", userSchema);
