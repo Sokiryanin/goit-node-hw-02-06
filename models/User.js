@@ -36,12 +36,18 @@ userSchema.pre("findOneAndUpdate", preUpdate);
 userSchema.post("findOneAndUpdate", handleSaveError);
 
 export const userSignupSchema = Joi.object({
-  email: Joi.string().pattern(emailRegex),
+  email: Joi.string()
+    .pattern(emailRegex)
+    .required()
+    .messages({ "any.required": `"email" is a required field` }),
   password: Joi.string().min(6).required(),
 });
 
 export const userSigninSchema = Joi.object({
-  email: Joi.string().pattern(emailRegex),
+  email: Joi.string()
+    .pattern(emailRegex)
+    .required()
+    .messages({ "any.required": `"email" is a required field` }),
   password: Joi.string().min(6).required(),
 });
 
