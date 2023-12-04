@@ -99,7 +99,11 @@ const updateAvatar = async (req, res, next) => {
 
   await fs.rename(oldPath, newPath);
   const avatarURL = path.join("avatars", filename);
-  const result = await User.findByIdAndUpdate(_id, avatarURL);
+  const result = await User.findByIdAndUpdate(
+    _id,
+    { avatarURL },
+    { new: true }
+  );
 
   res.status(200).json(result);
 };
