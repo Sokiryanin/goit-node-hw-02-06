@@ -90,22 +90,46 @@ const updateSubscription = async (req, res) => {
   res.json({ message: "The subscription was updated successfully" });
 };
 
+// const updateAvatar = async (req, res, next) => {
+//   const { _id } = req.user;
+//   const { path: oldPath, filename } = req.file;
+//   const newPath = path.join(avatarsPath, filename);
+
+//   (await jimp.read(oldPath)).resize(250, 250).write(oldPath);
+
+//   await fs.rename(oldPath, newPath);
+//   const avatarURL = path.join("avatars", filename);
+//   await User.findByIdAndUpdate(_id, { avatarURL }, { new: true });
+
+//   res.status(200).json({ avatarURL });
+// };
+
 const updateAvatar = async (req, res, next) => {
-  const { _id } = req.user;
-  const { path: oldPath, filename } = req.file;
-  const newPath = path.join(avatarsPath, filename);
+  try {
+    const { _id } = req.user;
 
-  (await jimp.read(oldPath)).resize(250, 250).write(oldPath);
+    if (!req.file) {
+      return res.status(401).json({ message: "File is not transferred" });
+    }
 
-  await fs.rename(oldPath, newPath);
-  const avatarURL = path.join("avatars", filename);
-  const result = await User.findByIdAndUpdate(
-    _id,
-    { avatarURL },
-    { new: true }
-  );
+    const { path: oldPath, filename } = req.file;
+    const newPath = path.join(avatarsPath, filename);
 
-  res.status(200).json(result);
+    (await jimp.read(oldPath)).resize(250, 250).write(oldPath);
+
+    await fs.rename(oldPath, newPath);
+    const avatarURL = path.join("avatars", filename);
+    const updatedUser = await User.findByIdAndUpdate(
+      _id,
+      { avatarURL },
+      { new: true }
+    );
+
+    res.status(200).json({ avatarURL: updatedUser.avatarURL });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 export default {
